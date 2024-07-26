@@ -4,6 +4,8 @@
 
 SerializableDataTable is a library providing an abstraction class that allows you to serialize and deserialize data to and from a `DataTable` instance.
 
+[![NuGet Version](https://img.shields.io/nuget/v/SerializableDataTable.svg?style=flat)](https://www.nuget.org/packages/SerializableDataTable/) [![NuGet](https://img.shields.io/nuget/dt/SerializableDataTable.svg)](https://www.nuget.org/packages/SerializableDataTable)
+
 ## Help, Feedback, Contribute
 
 If you have any issues or feedback, please file an issue here in Github. We'd love to have you help by contributing code for new features, optimization to the existing codebase, ideas for future releases, or fixes!
