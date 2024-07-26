@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SerializableDataTables</name>
+    </assembly>
+    <members>
+        <member name="T:SerializableDataTables.ColumnValueType">
+            <summary>
+            Column value type.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.String">
+            <summary>
+            String.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Int32">
+            <summary>
+            Int32.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Int64">
+            <summary>
+            Int64.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Decimal">
+            <summary>
+            Decimal.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Double">
+            <summary>
+            Double.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Float">
+            <summary>
+            Float.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Boolean">
+            <summary>
+            Boolean.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.DateTime">
+            <summary>
+            DateTime.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.DateTimeOffset">
+            <summary>
+            DateTimeOffset.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Byte">
+            <summary>
+            Byte.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.ByteArray">
+            <summary>
+            ByteArray.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Char">
+            <summary>
+            Char.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Guid">
+            <summary>
+            GUID.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Object">
+            <summary>
+            Object.
+            </summary>
+        </member>
+        <member name="T:SerializableDataTables.SerializableColumn">
+            <summary>
+            Column for serializable data table.
+            </summary>
+        </member>
+        <member name="P:SerializableDataTables.SerializableColumn.Name">
+            <summary>
+            Name of the data table.
+            </summary>
+        </member>
+        <member name="P:SerializableDataTables.SerializableColumn.Type">
+            <summary>
+            Column value type.
+            </summary>
+        </member>
+        <member name="M:SerializableDataTables.SerializableColumn.#ctor">
+            <summary>
+            Instantiate.
+            </summary>
+        </member>
+        <member name="T:SerializableDataTables.SerializableDataTable">
+            <summary>
+            Serializable data table.
+            </summary>
+        </member>
+        <member name="P:SerializableDataTables.SerializableDataTable.Name">
+            <summary>
+            Name of the data table.
+            </summary>
+        </member>
+        <member name="P:SerializableDataTables.SerializableDataTable.Columns">
+            <summary>
+            Columns.
+            </summary>
+        </member>
+        <member name="P:SerializableDataTables.SerializableDataTable.Rows">
+            <summary>
+            Rows.
+            </summary>
+        </member>
+        <member name="M:SerializableDataTables.SerializableDataTable.#ctor(System.String)">
+            <summary>
+            Instantiate.
+            </summary>
+            <param name="name">Name.</param>
+        </member>
+        <member name="M:SerializableDataTables.SerializableDataTable.ToDataTable">
+            <summary>
+            Convert to a DataTable object.
+            </summary>
+            <returns>DataTable.</returns>
+        </member>
+        <member name="M:SerializableDataTables.SerializableDataTable.FromDataTable(System.Data.DataTable)">
+            <summary>
+            Convert from a DataTable object.
+            </summary>
+            <param name="dt">DataTable.</param>
+            <returns>SerializableDataTable.</returns>
+        </member>
+    </members>
+</doc>

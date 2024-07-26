@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Remove="C:\Users\joelc\.nuget\packages\serializationhelper\1.0.3\contentFiles\any\net6.0\logo.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="SerializationHelper" Version="1.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SerializableDataTable\SerializableDataTables.csproj" />
+	</ItemGroup>
+
+</Project>
