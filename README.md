@@ -1,4 +1,4 @@
-<img src="https://github.com/jchristn/SerializableDataTable/blob/main/Assets/icon.png?raw=true" data-canonical-src="https://github.com/jchristn/SerializableDataTable/blob/main/Assets/icon.png?raw=true" width="128" height="128" />
+<img src="https://github.com/jchristn/SerializableDataTable/blob/main/assets/icon.png?raw=true" data-canonical-src="https://github.com/jchristn/SerializableDataTable/blob/main/assets/icon.png?raw=true" width="128" height="128" />
 
 # SerializableDataTable
 
