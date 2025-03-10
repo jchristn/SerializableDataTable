@@ -140,7 +140,17 @@
                 Dictionary<string, object> val = new Dictionary<string, object>();
 
                 foreach (DataColumn col in dt.Columns)
-                    val.Add(col.ColumnName, row[col.ColumnName]);
+                {
+                    object cellValue = row[col.ColumnName];
+                    if (cellValue == DBNull.Value || cellValue == null)
+                    {
+                        val.Add(col.ColumnName, null);
+                    }
+                    else
+                    {
+                        val.Add(col.ColumnName, cellValue);
+                    }
+                }
 
                 ret.Rows.Add(val);
             }
