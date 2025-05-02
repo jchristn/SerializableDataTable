@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Text;
     using System.Text.Json;
     using SerializableDataTables;
 
@@ -24,10 +23,7 @@
             // Test 3: DateTime and complex types
             TestComplexTypes();
 
-            // Test 4: Binary data and Base64 encoding
-            TestBinaryData();
-
-            // Test 5: Table with a mix of all supported types
+            // Test 4: Table with a mix of all supported types
             TestAllSupportedTypes();
 
             Console.WriteLine("All tests completed.");
@@ -142,58 +138,9 @@
             Console.WriteLine();
         }
 
-        private static void TestBinaryData()
-        {
-            Console.WriteLine("Test 4: Binary data and Base64 encoding");
-            Console.WriteLine("---------------------------------------");
-
-            // Create a table specifically for binary data
-            SerializableDataTable binaryTable = new SerializableDataTable("Binary Data Table");
-
-            // Add columns
-            binaryTable.Columns.Add(new SerializableColumn { Name = "ID", Type = ColumnValueType.Int32 });
-            binaryTable.Columns.Add(new SerializableColumn { Name = "Name", Type = ColumnValueType.String });
-            binaryTable.Columns.Add(new SerializableColumn { Name = "Data", Type = ColumnValueType.ByteArray });
-
-            // Add rows with different binary data
-            binaryTable.Rows.Add(new Dictionary<string, object>
-            {
-                { "ID", 1 },
-                { "Name", "Small binary" },
-                { "Data", new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 } }
-            });
-
-            // Create some larger binary data
-            byte[] largerData = Encoding.UTF8.GetBytes("This is a test string that will be converted to binary and then to Base64 in the markdown output.");
-            binaryTable.Rows.Add(new Dictionary<string, object>
-            {
-                { "ID", 2 },
-                { "Name", "Text as binary" },
-                { "Data", largerData }
-            });
-
-            // Add a row with null binary data
-            binaryTable.Rows.Add(new Dictionary<string, object>
-            {
-                { "ID", 3 },
-                { "Name", "No data" },
-                { "Data", null }
-            });
-
-            // Generate and display markdown
-            string markdown = binaryTable.ToMarkdown();
-            Console.WriteLine(markdown);
-
-            // Verify the Base64 encoding is correct
-            byte[] testData = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 };
-            string expectedBase64 = Convert.ToBase64String(testData);
-            Console.WriteLine($"\nVerification: Base64 of first row should be: {expectedBase64}");
-            Console.WriteLine();
-        }
-
         private static void TestAllSupportedTypes()
         {
-            Console.WriteLine("Test 5: All supported types");
+            Console.WriteLine("Test 4: All supported types");
             Console.WriteLine("--------------------------");
 
             // Create a table with all supported types
@@ -217,9 +164,7 @@
 
             // Add a row with values for each type
             DateTime preciseDateTime = new DateTime(2023, 4, 15, 13, 45, 30, 123);
-            preciseDateTime = preciseDateTime.AddTicks(4560); // Add microseconds precision
             DateTimeOffset preciseDateTimeOffset = new DateTimeOffset(2023, 4, 15, 13, 45, 30, 456, TimeSpan.FromHours(-5));
-            preciseDateTimeOffset = preciseDateTimeOffset.AddTicks(7890); // Add microseconds precision
 
             allTypesTable.Rows.Add(new Dictionary<string, object>
             {

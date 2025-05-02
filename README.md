@@ -13,6 +13,7 @@ If you have any issues or feedback, please file an issue here in Github. We'd lo
 ## New in v1.0.x
 
 - Initial release
+- Added markdown support
 
 ## Example
 
@@ -40,9 +41,30 @@ DataTable dt2 = Serializer.DeserializeJson<SerializableDataTable>(json).ToDataTa
 
 ## Supported Data Types
 
-This library supports the following `DataTable` value types: `string`, `Int32`, `Int64`, `decimal`, `double`, `float`, `bool`, `DateTime`, `DateTimeOffset`, `byte`, `byte[]`, `char`, `Guid`.
+This library supports the following `DataTable` value types: `string`, `Int32`, `Int64`, `decimal`, `double`, `float`, `bool`, `DateTime`, `DateTimeOffset`, `byte`, `byte[]`, `char`, `Guid`, and `Object`.
 
-The library currently does not support arrays or nested objects.
+## Conversion to Markdown
+
+The `SerializableDataTable` class has a public method `ToMarkdown()` which returns a markdown string.
+
+The static class `MarkdownConverter` can be used with a `DataTable` or a `SerializableDataTable` to produce a markdown string.  
+
+```csharp
+using System.Data;
+using SerializableDataTables;
+
+SerializableDataTable sdt = ...;
+string md = sdt.ToMarkdown();
+
+md = MarkdownConverter.Convert(sdt); // full markdown
+
+Console.WriteLine(MarkdownConverter.ConvertHeaders(sdt)); // show only header row and separator row
+
+foreach (string str in MarkdownConverter.IterateRows(sdt))
+{
+    Console.Write(str); // print each data row, which has a newline separator already added
+}
+```
 
 ## Version History
 

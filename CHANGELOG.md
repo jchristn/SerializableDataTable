@@ -5,6 +5,7 @@
 v1.0.x
 
 - Initial release
+- Added markdown support
 
 ## Previous Versions
 

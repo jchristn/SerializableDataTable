@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Data;
     using System.Linq;
+    using System.Text;
     using System.Text.Json;
 
     /// <summary>
@@ -73,47 +74,6 @@
             if (!String.IsNullOrEmpty(name)) Name = name;
         }
 
-        #endregion
-
-        #region Public-Methods
-
-        /// <summary>
-        /// Convert to a DataTable object.
-        /// </summary>
-        /// <returns>DataTable.</returns>
-        public DataTable ToDataTable()
-        {
-            DataTable ret = new DataTable(Name);
-
-            foreach (SerializableColumn col in Columns)
-            {
-                ret.Columns.Add(new DataColumn
-                {
-                    ColumnName = col.Name,
-                    DataType = ColumnValueTypeToDataType(col.Type)
-                });
-            }
-
-            for (int i = 0; i < Rows.Count; i++)
-            {
-                Dictionary<string, object> dict = Rows[i];
-
-                DataRow row = ret.NewRow();
-
-                foreach (KeyValuePair<string, object> val in dict)
-                {
-                    if (!Columns.Any(c => c.Name.Equals(val.Key)))
-                        throw new ArgumentException("No column exists with name '" + val.Key + "' as found in row " + i + ".");
-
-                    row[val.Key] = GetValue(val.Value);
-                }
-
-                ret.Rows.Add(row);
-            }
-
-            return ret;
-        }
-
         /// <summary>
         /// Convert from a DataTable object.
         /// </summary>
@@ -156,6 +116,56 @@
             }
 
             return ret;
+        }
+
+        #endregion
+
+        #region Public-Methods
+
+        /// <summary>
+        /// Convert to a DataTable object.
+        /// </summary>
+        /// <returns>DataTable.</returns>
+        public DataTable ToDataTable()
+        {
+            DataTable ret = new DataTable(Name);
+
+            foreach (SerializableColumn col in Columns)
+            {
+                ret.Columns.Add(new DataColumn
+                {
+                    ColumnName = col.Name,
+                    DataType = ColumnValueTypeToDataType(col.Type)
+                });
+            }
+
+            for (int i = 0; i < Rows.Count; i++)
+            {
+                Dictionary<string, object> dict = Rows[i];
+
+                DataRow row = ret.NewRow();
+
+                foreach (KeyValuePair<string, object> val in dict)
+                {
+                    if (!Columns.Any(c => c.Name.Equals(val.Key)))
+                        throw new ArgumentException("No column exists with name '" + val.Key + "' as found in row " + i + ".");
+
+                    row[val.Key] = GetValue(val.Value);
+                }
+
+                ret.Rows.Add(row);
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Convert to a markdown table string.
+        /// </summary>
+        /// <returns>Markdown formatted string representation of the table, or null if no columns are defined.</returns>
+        public string ToMarkdown()
+        {
+            return MarkdownConverter.Convert(this);
         }
 
         #endregion

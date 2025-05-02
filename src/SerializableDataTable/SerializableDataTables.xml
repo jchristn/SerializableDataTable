@@ -79,6 +79,79 @@
             Object.
             </summary>
         </member>
+        <member name="T:SerializableDataTables.MarkdownConverter">
+            <summary>
+            Static utility class to convert DataTable and SerializableDataTable to Markdown format
+            </summary>
+        </member>
+        <member name="P:SerializableDataTables.MarkdownConverter.NewlineCharacter">
+            <summary>
+            Newline character to use in all markdown conversion operations.
+            Defaults to Environment.NewLine.
+            </summary>
+        </member>
+        <member name="M:SerializableDataTables.MarkdownConverter.Convert(System.Data.DataTable)">
+            <summary>
+            Convert an entire DataTable to markdown format.
+            </summary>
+            <param name="dt">The DataTable to convert.</param>
+            <returns>Markdown formatted string representation of the table, or null if no columns are defined.</returns>
+        </member>
+        <member name="M:SerializableDataTables.MarkdownConverter.Convert(SerializableDataTables.SerializableDataTable)">
+            <summary>
+            Convert an entire SerializableDataTable to markdown format.
+            </summary>
+            <param name="dt">The SerializableDataTable to convert.</param>
+            <returns>Markdown formatted string representation of the table, or null if no columns are defined.</returns>
+        </member>
+        <member name="M:SerializableDataTables.MarkdownConverter.ConvertHeaders(System.Data.DataTable)">
+            <summary>
+            Convert just the headers of a DataTable to markdown format.
+            </summary>
+            <param name="dt">The DataTable whose headers to convert.</param>
+            <returns>Markdown formatted string representation of the table headers.</returns>
+        </member>
+        <member name="M:SerializableDataTables.MarkdownConverter.ConvertHeaders(SerializableDataTables.SerializableDataTable)">
+            <summary>
+            Convert just the headers of a SerializableDataTable to markdown format.
+            </summary>
+            <param name="dt">The SerializableDataTable whose headers to convert.</param>
+            <returns>Markdown formatted string representation of the table headers.</returns>
+        </member>
+        <member name="M:SerializableDataTables.MarkdownConverter.ConvertRow(System.Data.DataTable,System.Int32)">
+            <summary>
+            Convert a specific row of a DataTable to markdown format.
+            </summary>
+            <param name="dt">The DataTable containing the row.</param>
+            <param name="rowNumber">Zero-based index of the row to convert.</param>
+            <returns>Markdown formatted string representation of the row.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when dt is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when rowNumber is outside the bounds of the rows collection.</exception>
+        </member>
+        <member name="M:SerializableDataTables.MarkdownConverter.ConvertRow(SerializableDataTables.SerializableDataTable,System.Int32)">
+            <summary>
+            Convert a specific row of a SerializableDataTable to markdown format.
+            </summary>
+            <param name="dt">The SerializableDataTable containing the row.</param>
+            <param name="rowNumber">Zero-based index of the row to convert.</param>
+            <returns>Markdown formatted string representation of the row.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when dt is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when rowNumber is outside the bounds of the rows collection.</exception>
+        </member>
+        <member name="M:SerializableDataTables.MarkdownConverter.IterateRows(System.Data.DataTable)">
+            <summary>
+            Iterate through rows of a DataTable, yielding the markdown representation of each row.
+            </summary>
+            <param name="dt">The DataTable to iterate.</param>
+            <returns>IEnumerable of strings, each representing a row in markdown format.</returns>
+        </member>
+        <member name="M:SerializableDataTables.MarkdownConverter.IterateRows(SerializableDataTables.SerializableDataTable)">
+            <summary>
+            Iterate through rows of a SerializableDataTable, yielding the markdown representation of each row.
+            </summary>
+            <param name="dt">The SerializableDataTable to iterate.</param>
+            <returns>IEnumerable of strings, each representing a row in markdown format.</returns>
+        </member>
         <member name="T:SerializableDataTables.SerializableColumn">
             <summary>
             Column for serializable data table.
@@ -125,18 +198,24 @@
             </summary>
             <param name="name">Name.</param>
         </member>
-        <member name="M:SerializableDataTables.SerializableDataTable.ToDataTable">
-            <summary>
-            Convert to a DataTable object.
-            </summary>
-            <returns>DataTable.</returns>
-        </member>
         <member name="M:SerializableDataTables.SerializableDataTable.FromDataTable(System.Data.DataTable)">
             <summary>
             Convert from a DataTable object.
             </summary>
             <param name="dt">DataTable.</param>
             <returns>SerializableDataTable.</returns>
+        </member>
+        <member name="M:SerializableDataTables.SerializableDataTable.ToDataTable">
+            <summary>
+            Convert to a DataTable object.
+            </summary>
+            <returns>DataTable.</returns>
+        </member>
+        <member name="M:SerializableDataTables.SerializableDataTable.ToMarkdown">
+            <summary>
+            Convert to a markdown table string.
+            </summary>
+            <returns>Markdown formatted string representation of the table, or null if no columns are defined.</returns>
         </member>
     </members>
 </doc>
