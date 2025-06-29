@@ -25,16 +25,42 @@ using SerializableDataTables;
 using SerializationHelper;
 
 // Create your DataTable and columns
-DataTable dt1 = new DataTable();
-dt1.Columns.Add(new DataColumn { ... });
+DataTable dt1 = new DataTable("Test");
+dt1.Columns.Add("id", typeof(int));
+dt1.Columns.Add("name", typeof(String));
 
 // Create your DataRows
-DataRow row = dt1.NewRow();
-row["[name]"] = "[value]";
-dt1.Rows.Add(row);
+dt1.Rows.Add(1, "Hello");
+dt1.Rows.Add(2, "World");
 
-string json = Serializer.SerializeJson(SerializableDataTable.FromDataTable(dt), true);
+SerializableDataTable sdt = SerializableDataTable.FromDataTable(dt);
+string json = Serializer.SerializeJson(sdt, true);
 Console.WriteLine("JSON: " + Environment.NewLine + json + Environment.NewLine);
+/*
+{
+  "Name": "Test",
+  "Columns": [
+    {
+      "Name": "id",
+      "Type": "Int32"
+    },
+    {
+      "Name": "name",
+      "Type": "String"
+    }
+  ],
+  "Rows": [
+    {
+      "id": 1,
+      "name": "Hello"
+    },
+    {
+      "id": 2,
+      "name": "World"
+    }
+  ]
+}
+ */
 
 DataTable dt2 = Serializer.DeserializeJson<SerializableDataTable>(json).ToDataTable();
 ```
