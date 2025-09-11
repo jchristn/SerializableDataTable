@@ -150,7 +150,8 @@
                     if (!Columns.Any(c => c.Name.Equals(val.Key)))
                         throw new ArgumentException("No column exists with name '" + val.Key + "' as found in row " + i + ".");
 
-                    row[val.Key] = GetValue(val.Value);
+                    object value = GetValue(val.Value);
+                    row[val.Key] = value ?? DBNull.Value;
                 }
 
                 ret.Rows.Add(row);

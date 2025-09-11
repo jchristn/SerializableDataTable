@@ -53,8 +53,8 @@
 
         private static void TestBasicTypes()
         {
-            Console.WriteLine("Test 2: Basic types");
-            Console.WriteLine("------------------");
+            Console.WriteLine("Test 2a: Basic types");
+            Console.WriteLine("--------------------");
 
             // Create a table with basic types
             SerializableDataTable basicTable = new SerializableDataTable("Basic Types Table");
@@ -93,6 +93,22 @@
             // Generate and display markdown
             string markdown = basicTable.ToMarkdown();
             Console.WriteLine(markdown);
+            Console.WriteLine();
+
+            Console.WriteLine("Test 2b: Converter");
+            Console.WriteLine("------------------");
+            string headers = MarkdownConverter.ConvertHeaders(basicTable);
+            Console.WriteLine("Headers:" + Environment.NewLine + headers);
+
+            for (int i = 0; i < basicTable.Rows.Count; i++)
+            {
+                string row = MarkdownConverter.ConvertRow(basicTable, i);
+                Console.WriteLine("Row " + i + ":" + Environment.NewLine + row);
+            }
+
+            Console.WriteLine("");
+            Console.WriteLine("Row 0 with header:");
+            Console.WriteLine(headers + MarkdownConverter.ConvertRow(basicTable, 0));
             Console.WriteLine();
         }
 
