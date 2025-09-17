@@ -14,6 +14,11 @@
             String.
             </summary>
         </member>
+        <member name="F:SerializableDataTables.ColumnValueType.Int16">
+            <summary>
+            Int16.
+            </summary>
+        </member>
         <member name="F:SerializableDataTables.ColumnValueType.Int32">
             <summary>
             Int32.
@@ -22,6 +27,21 @@
         <member name="F:SerializableDataTables.ColumnValueType.Int64">
             <summary>
             Int64.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.UInt16">
+            <summary>
+            UInt16.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.UInt32">
+            <summary>
+            UInt32.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.UInt64">
+            <summary>
+            UInt64.
             </summary>
         </member>
         <member name="F:SerializableDataTables.ColumnValueType.Decimal">
@@ -54,9 +74,19 @@
             DateTimeOffset.
             </summary>
         </member>
+        <member name="F:SerializableDataTables.ColumnValueType.TimeSpan">
+            <summary>
+            TimeSpan.
+            </summary>
+        </member>
         <member name="F:SerializableDataTables.ColumnValueType.Byte">
             <summary>
             Byte.
+            </summary>
+        </member>
+        <member name="F:SerializableDataTables.ColumnValueType.SByte">
+            <summary>
+            SByte.
             </summary>
         </member>
         <member name="F:SerializableDataTables.ColumnValueType.ByteArray">

@@ -179,10 +179,18 @@
             {
                 case Type _ when t == typeof(string):
                     return ColumnValueType.String;
+                case Type _ when t == typeof(Int16):
+                    return ColumnValueType.Int16;
                 case Type _ when t == typeof(Int32):
                     return ColumnValueType.Int32;
                 case Type _ when t == typeof(Int64):
                     return ColumnValueType.Int64;
+                case Type _ when t == typeof(UInt16):
+                    return ColumnValueType.UInt16;
+                case Type _ when t == typeof(UInt32):
+                    return ColumnValueType.UInt32;
+                case Type _ when t == typeof(UInt64):
+                    return ColumnValueType.UInt64;
                 case Type _ when t == typeof(decimal):
                     return ColumnValueType.Decimal;
                 case Type _ when t == typeof(double):
@@ -195,8 +203,12 @@
                     return ColumnValueType.DateTime;
                 case Type _ when t == typeof(DateTimeOffset):
                     return ColumnValueType.DateTimeOffset;
+                case Type _ when t == typeof(TimeSpan):
+                    return ColumnValueType.TimeSpan;
                 case Type _ when t == typeof(byte):
                     return ColumnValueType.Byte;
+                case Type _ when t == typeof(sbyte):
+                    return ColumnValueType.SByte;
                 case Type _ when t == typeof(byte[]):
                     return ColumnValueType.ByteArray;
                 case Type _ when t == typeof(char):
@@ -216,10 +228,18 @@
             {
                 case ColumnValueType.String:
                     return typeof(string);
+                case ColumnValueType.Int16:
+                    return typeof(Int16);
                 case ColumnValueType.Int32:
                     return typeof(Int32);
                 case ColumnValueType.Int64:
                     return typeof(Int64);
+                case ColumnValueType.UInt16:
+                    return typeof(UInt16);
+                case ColumnValueType.UInt32:
+                    return typeof(UInt32);
+                case ColumnValueType.UInt64:
+                    return typeof(UInt64);
                 case ColumnValueType.Decimal:
                     return typeof(decimal);
                 case ColumnValueType.Double:
@@ -232,8 +252,12 @@
                     return typeof(DateTime);
                 case ColumnValueType.DateTimeOffset:
                     return typeof(DateTimeOffset);
+                case ColumnValueType.TimeSpan:
+                    return typeof(TimeSpan);
                 case ColumnValueType.Byte:
                     return typeof(byte);
+                case ColumnValueType.SByte:
+                    return typeof(sbyte);
                 case ColumnValueType.ByteArray:
                     return typeof(byte[]);
                 case ColumnValueType.Char:

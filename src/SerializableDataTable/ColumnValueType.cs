@@ -20,6 +20,11 @@
         [EnumMember(Value = "String")]
         String,
         /// <summary>
+        /// Int16.
+        /// </summary>
+        [EnumMember(Value = "Int16")]
+        Int16,
+        /// <summary>
         /// Int32.
         /// </summary>
         [EnumMember(Value = "Int32")]
@@ -29,6 +34,21 @@
         /// </summary>
         [EnumMember(Value = "Int64")]
         Int64,
+        /// <summary>
+        /// UInt16.
+        /// </summary>
+        [EnumMember(Value = "UInt16")]
+        UInt16,
+        /// <summary>
+        /// UInt32.
+        /// </summary>
+        [EnumMember(Value = "UInt32")]
+        UInt32,
+        /// <summary>
+        /// UInt64.
+        /// </summary>
+        [EnumMember(Value = "UInt64")]
+        UInt64,
         /// <summary>
         /// Decimal.
         /// </summary>
@@ -60,10 +80,20 @@
         [EnumMember(Value = "DateTimeOffset")]
         DateTimeOffset,
         /// <summary>
+        /// TimeSpan.
+        /// </summary>
+        [EnumMember(Value = "TimeSpan")]
+        TimeSpan,
+        /// <summary>
         /// Byte.
         /// </summary>
         [EnumMember(Value = "Byte")]
         Byte,
+        /// <summary>
+        /// SByte.
+        /// </summary>
+        [EnumMember(Value = "SByte")]
+        SByte,
         /// <summary>
         /// ByteArray.
         /// </summary>

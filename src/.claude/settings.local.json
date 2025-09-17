@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Code/Misc/SerializableDataTable/**)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet run:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

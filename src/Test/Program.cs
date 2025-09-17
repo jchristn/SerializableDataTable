@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Linq;
     using System.Text.Json;
     using SerializableDataTables;
 
@@ -43,12 +44,15 @@
                 SerializableDataTable nullSerializable = SerializableDataTable.FromDataTable(nullTestTable);
                 PrettyPrintSerializableDataTable(nullSerializable);
 
-                // Test 5: Test various data types
-                Console.WriteLine("\n\nTest 5: Various Data Types");
-                Console.WriteLine("---------------------------");
+                // Test 5: Test all supported data types
+                Console.WriteLine("\n\nTest 5: All Supported Data Types");
+                Console.WriteLine("---------------------------------");
                 DataTable typeTestTable = CreateDataTableWithVariousTypes();
                 SerializableDataTable typeSerializable = SerializableDataTable.FromDataTable(typeTestTable);
                 PrettyPrintSerializableDataTable(typeSerializable);
+                DataTable convertedTypes = typeSerializable.ToDataTable();
+                Console.WriteLine("\nConverted back to DataTable:");
+                PrintDataTable(convertedTypes);
 
                 Console.WriteLine("\n\n=== All tests completed successfully! ===");
             }
@@ -101,31 +105,42 @@
             DataTable dt = new DataTable("TypeTest");
 
             dt.Columns.Add("StringCol", typeof(string));
+            dt.Columns.Add("Int16Col", typeof(Int16));
             dt.Columns.Add("Int32Col", typeof(int));
             dt.Columns.Add("Int64Col", typeof(long));
+            dt.Columns.Add("UInt16Col", typeof(UInt16));
+            dt.Columns.Add("UInt32Col", typeof(UInt32));
+            dt.Columns.Add("UInt64Col", typeof(UInt64));
             dt.Columns.Add("DecimalCol", typeof(decimal));
             dt.Columns.Add("DoubleCol", typeof(double));
             dt.Columns.Add("FloatCol", typeof(float));
             dt.Columns.Add("BoolCol", typeof(bool));
             dt.Columns.Add("DateTimeCol", typeof(DateTime));
+            dt.Columns.Add("TimeSpanCol", typeof(TimeSpan));
             dt.Columns.Add("GuidCol", typeof(Guid));
             dt.Columns.Add("CharCol", typeof(char));
 
             dt.Rows.Add(
                 "Test String",
+                (Int16)12345,
                 42,
                 9223372036854775807L,
+                (UInt16)65000,
+                (UInt32)4000000000,
+                (UInt64)18000000000000000000,
                 123.45m,
                 3.14159265359,
                 2.71828f,
                 true,
                 DateTime.Now,
+                TimeSpan.FromHours(25.5),
                 Guid.NewGuid(),
                 'A'
             );
 
             return dt;
         }
+
 
         private static SerializableDataTable CreateSerializableDataTableDirectly()
         {
@@ -171,23 +186,50 @@
             Console.WriteLine($"Columns: {dt.Columns.Count}, Rows: {dt.Rows.Count}");
             Console.WriteLine();
 
-            // Print column headers
-            foreach (DataColumn col in dt.Columns)
+            if (dt.Columns.Count == 0)
             {
-                Console.Write($"{col.ColumnName} ({col.DataType.Name})\t");
+                Console.WriteLine("No columns defined.");
+                return;
+            }
+
+            // Calculate column widths
+            int[] columnWidths = new int[dt.Columns.Count];
+            for (int i = 0; i < dt.Columns.Count; i++)
+            {
+                DataColumn col = dt.Columns[i];
+                string header = $"{col.ColumnName} ({col.DataType.Name})";
+                columnWidths[i] = Math.Max(header.Length, 8); // Minimum width of 8
+
+                // Check row data for wider content
+                foreach (DataRow row in dt.Rows)
+                {
+                    string cellValue = (row[i] == DBNull.Value || row[i] == null) ? "NULL" : row[i].ToString();
+                    columnWidths[i] = Math.Max(columnWidths[i], cellValue.Length);
+                }
+
+                // Add padding
+                columnWidths[i] += 2;
+            }
+
+            // Print column headers
+            for (int i = 0; i < dt.Columns.Count; i++)
+            {
+                string header = $"{dt.Columns[i].ColumnName} ({dt.Columns[i].DataType.Name})";
+                Console.Write(header.PadRight(columnWidths[i]));
             }
             Console.WriteLine();
-            Console.WriteLine(new string('-', 80));
+
+            // Print separator
+            int totalWidth = columnWidths.Sum();
+            Console.WriteLine(new string('-', totalWidth));
 
             // Print rows
             foreach (DataRow row in dt.Rows)
             {
-                foreach (var item in row.ItemArray)
+                for (int i = 0; i < dt.Columns.Count; i++)
                 {
-                    if (item == DBNull.Value || item == null)
-                        Console.Write("NULL\t\t");
-                    else
-                        Console.Write($"{item}\t");
+                    string cellValue = (row[i] == DBNull.Value || row[i] == null) ? "NULL" : row[i].ToString();
+                    Console.Write(cellValue.PadRight(columnWidths[i]));
                 }
                 Console.WriteLine();
             }
@@ -208,35 +250,69 @@
             }
 
             Console.WriteLine("\nRow Data:");
-            Console.WriteLine(new string('-', 80));
 
-            // Print header
-            foreach (var col in sdt.Columns)
+            if (sdt.Columns.Count == 0)
             {
-                Console.Write($"{col.Name}\t");
+                Console.WriteLine("No columns defined.");
+                return;
             }
-            Console.WriteLine();
-            Console.WriteLine(new string('-', 80));
 
-            // Print rows
-            int rowIndex = 0;
-            foreach (var row in sdt.Rows)
+            // Calculate column widths
+            int[] columnWidths = new int[sdt.Columns.Count];
+            for (int i = 0; i < sdt.Columns.Count; i++)
             {
-                Console.Write($"[{rowIndex}] ");
-                foreach (var col in sdt.Columns)
+                SerializableColumn col = sdt.Columns[i];
+                columnWidths[i] = Math.Max(col.Name.Length, 8); // Minimum width of 8
+
+                // Check row data for wider content
+                foreach (Dictionary<string, object> row in sdt.Rows)
                 {
                     if (row.ContainsKey(col.Name))
                     {
-                        var value = row[col.Name];
-                        if (value == null)
-                            Console.Write("NULL\t");
-                        else
-                            Console.Write($"{value}\t");
+                        string cellValue = (row[col.Name] == null) ? "NULL" : row[col.Name].ToString();
+                        columnWidths[i] = Math.Max(columnWidths[i], cellValue.Length);
                     }
                     else
                     {
-                        Console.Write("MISSING\t");
+                        columnWidths[i] = Math.Max(columnWidths[i], 7); // "MISSING"
                     }
+                }
+
+                // Add padding
+                columnWidths[i] += 2;
+            }
+
+            // Print column headers
+            for (int i = 0; i < sdt.Columns.Count; i++)
+            {
+                Console.Write(sdt.Columns[i].Name.PadRight(columnWidths[i]));
+            }
+            Console.WriteLine();
+
+            // Print separator
+            int totalWidth = columnWidths.Sum();
+            Console.WriteLine(new string('-', totalWidth));
+
+            // Print rows
+            int rowIndex = 0;
+            foreach (Dictionary<string, object> row in sdt.Rows)
+            {
+                for (int i = 0; i < sdt.Columns.Count; i++)
+                {
+                    SerializableColumn col = sdt.Columns[i];
+                    string cellValue;
+
+                    if (row.ContainsKey(col.Name))
+                    {
+                        object value = row[col.Name];
+                        cellValue = (value == null) ? "NULL" : value.ToString();
+                    }
+                    else
+                    {
+                        cellValue = "MISSING";
+                    }
+
+                    Console.Write(cellValue.PadRight(columnWidths[i]));
                 }
                 Console.WriteLine();
                 rowIndex++;
