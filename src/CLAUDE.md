@@ -39,7 +39,7 @@ dotnet pack SerializableDataTable/SerializableDataTables.csproj
 
 - **SerializableDataTable**: Main class that wraps `DataTable` functionality with JSON serialization support
 - **SerializableColumn**: Represents column metadata including name and data type
-- **ColumnValueType**: Enum defining supported data types (String, Int32, Int64, Decimal, Double, Float, Boolean, DateTime, DateTimeOffset, Byte, ByteArray, Char, Guid, Object)
+- **ColumnValueTypeEnum**: Enum defining supported data types (String, Int16, Int32, Int64, UInt16, UInt32, UInt64, Decimal, Double, Float, Boolean, DateTime, DateTimeOffset, TimeSpan, Byte, SByte, ByteArray, Char, Guid, Object)
 - **MarkdownConverter**: Static utility class for converting tables to markdown format
 
 ### Key Features

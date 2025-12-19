@@ -40,6 +40,11 @@
             Console.WriteLine("---------------------");
             TestErrorHandling();
 
+            // Test array types
+            Console.WriteLine("\nTesting array types:");
+            Console.WriteLine("-------------------");
+            TestArrayTypes();
+
             Console.WriteLine("\nAll tests completed.");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
@@ -170,8 +175,8 @@
             // Test SerializableDataTable with columns but no rows
             Console.WriteLine("\nSerializableDataTable with columns but no rows:");
             SerializableDataTable columnsOnlySdt = new SerializableDataTable("Columns Only");
-            columnsOnlySdt.Columns.Add(new SerializableColumn { Name = "Col1", Type = ColumnValueType.String });
-            columnsOnlySdt.Columns.Add(new SerializableColumn { Name = "Col2", Type = ColumnValueType.Int32 });
+            columnsOnlySdt.Columns.Add(new SerializableColumn { Name = "Col1", Type = ColumnValueTypeEnum.String });
+            columnsOnlySdt.Columns.Add(new SerializableColumn { Name = "Col2", Type = ColumnValueTypeEnum.Int32 });
             string columnsOnlySdtResult = MarkdownConverter.Convert(columnsOnlySdt);
             Console.WriteLine(columnsOnlySdtResult);
         }
@@ -220,7 +225,7 @@
             // Test ConvertRow with invalid row index for SerializableDataTable
             Console.WriteLine("\nInvalid row index for SerializableDataTable:");
             SerializableDataTable sdt = new SerializableDataTable();
-            sdt.Columns.Add(new SerializableColumn { Name = "Test", Type = ColumnValueType.String });
+            sdt.Columns.Add(new SerializableColumn { Name = "Test", Type = ColumnValueTypeEnum.String });
             sdt.Rows.Add(new Dictionary<string, object> { { "Test", "Value" } });
             try
             {
@@ -292,14 +297,14 @@
             SerializableDataTable sdt = new SerializableDataTable("Test SerializableDataTable");
 
             // Add columns with various types
-            sdt.Columns.Add(new SerializableColumn { Name = "ID", Type = ColumnValueType.Int32 });
-            sdt.Columns.Add(new SerializableColumn { Name = "Name", Type = ColumnValueType.String });
-            sdt.Columns.Add(new SerializableColumn { Name = "IsActive", Type = ColumnValueType.Boolean });
-            sdt.Columns.Add(new SerializableColumn { Name = "Created", Type = ColumnValueType.DateTime });
-            sdt.Columns.Add(new SerializableColumn { Name = "LastLogin", Type = ColumnValueType.DateTimeOffset });
-            sdt.Columns.Add(new SerializableColumn { Name = "Balance", Type = ColumnValueType.Decimal });
-            sdt.Columns.Add(new SerializableColumn { Name = "Data", Type = ColumnValueType.ByteArray });
-            sdt.Columns.Add(new SerializableColumn { Name = "Metadata", Type = ColumnValueType.Object });
+            sdt.Columns.Add(new SerializableColumn { Name = "ID", Type = ColumnValueTypeEnum.Int32 });
+            sdt.Columns.Add(new SerializableColumn { Name = "Name", Type = ColumnValueTypeEnum.String });
+            sdt.Columns.Add(new SerializableColumn { Name = "IsActive", Type = ColumnValueTypeEnum.Boolean });
+            sdt.Columns.Add(new SerializableColumn { Name = "Created", Type = ColumnValueTypeEnum.DateTime });
+            sdt.Columns.Add(new SerializableColumn { Name = "LastLogin", Type = ColumnValueTypeEnum.DateTimeOffset });
+            sdt.Columns.Add(new SerializableColumn { Name = "Balance", Type = ColumnValueTypeEnum.Decimal });
+            sdt.Columns.Add(new SerializableColumn { Name = "Data", Type = ColumnValueTypeEnum.ByteArray });
+            sdt.Columns.Add(new SerializableColumn { Name = "Metadata", Type = ColumnValueTypeEnum.Object });
 
             // Add rows with test data
             DateTime now = DateTime.Now;
@@ -346,6 +351,61 @@
             });
 
             return sdt;
+        }
+
+        private static void TestArrayTypes()
+        {
+            Console.WriteLine("\nTesting DataTable with array columns:");
+
+            // Create DataTable with array columns
+            DataTable dt = new DataTable("ArrayTest");
+            dt.Columns.Add("ID", typeof(int));
+            dt.Columns.Add("FloatArray", typeof(object));
+            dt.Columns.Add("IntArray", typeof(object));
+            dt.Columns.Add("StringArray", typeof(object));
+
+            dt.Rows.Add(1, new float[] { 0.1f, 0.2f, 0.3f }, new int[] { 1, 2, 3 }, new string[] { "a", "b", "c" });
+            dt.Rows.Add(2, new float[] { -0.5f, 0f, 0.5f }, new int[] { 10, 20 }, new string[] { "hello", "world" });
+            dt.Rows.Add(3, null, null, null);
+
+            string markdown = MarkdownConverter.Convert(dt);
+            Console.WriteLine(markdown);
+
+            Console.WriteLine("\nTesting SerializableDataTable with array columns:");
+
+            // Create SerializableDataTable with array columns
+            SerializableDataTable sdt = new SerializableDataTable("SerializableArrayTest");
+            sdt.Columns.Add(new SerializableColumn { Name = "Name", Type = ColumnValueTypeEnum.String });
+            sdt.Columns.Add(new SerializableColumn { Name = "Embedding", Type = ColumnValueTypeEnum.Object });
+            sdt.Columns.Add(new SerializableColumn { Name = "Tags", Type = ColumnValueTypeEnum.Object });
+            sdt.Columns.Add(new SerializableColumn { Name = "Flags", Type = ColumnValueTypeEnum.Object });
+
+            sdt.Rows.Add(new Dictionary<string, object>
+            {
+                { "Name", "Document 1" },
+                { "Embedding", new float[] { 0.1f, 0.2f, 0.3f, 0.4f } },
+                { "Tags", new string[] { "important", "urgent" } },
+                { "Flags", new bool[] { true, false, true } }
+            });
+
+            sdt.Rows.Add(new Dictionary<string, object>
+            {
+                { "Name", "Document 2" },
+                { "Embedding", new double[] { 1.1, 2.2, 3.3 } },
+                { "Tags", new string[] { "normal" } },
+                { "Flags", new bool[] { false } }
+            });
+
+            sdt.Rows.Add(new Dictionary<string, object>
+            {
+                { "Name", "Document 3 (empty/null)" },
+                { "Embedding", new float[0] },
+                { "Tags", null },
+                { "Flags", null }
+            });
+
+            string sdtMarkdown = MarkdownConverter.Convert(sdt);
+            Console.WriteLine(sdtMarkdown);
         }
 
         #endregion

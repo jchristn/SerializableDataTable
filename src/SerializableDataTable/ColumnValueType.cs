@@ -12,7 +12,7 @@
     /// Column value type.
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum ColumnValueType
+    public enum ColumnValueTypeEnum
     {
         /// <summary>
         /// String.

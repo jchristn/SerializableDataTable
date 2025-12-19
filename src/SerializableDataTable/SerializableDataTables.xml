@@ -4,107 +4,107 @@
         <name>SerializableDataTables</name>
     </assembly>
     <members>
-        <member name="T:SerializableDataTables.ColumnValueType">
+        <member name="T:SerializableDataTables.ColumnValueTypeEnum">
             <summary>
             Column value type.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.String">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.String">
             <summary>
             String.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Int16">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Int16">
             <summary>
             Int16.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Int32">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Int32">
             <summary>
             Int32.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Int64">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Int64">
             <summary>
             Int64.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.UInt16">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.UInt16">
             <summary>
             UInt16.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.UInt32">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.UInt32">
             <summary>
             UInt32.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.UInt64">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.UInt64">
             <summary>
             UInt64.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Decimal">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Decimal">
             <summary>
             Decimal.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Double">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Double">
             <summary>
             Double.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Float">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Float">
             <summary>
             Float.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Boolean">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Boolean">
             <summary>
             Boolean.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.DateTime">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.DateTime">
             <summary>
             DateTime.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.DateTimeOffset">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.DateTimeOffset">
             <summary>
             DateTimeOffset.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.TimeSpan">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.TimeSpan">
             <summary>
             TimeSpan.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Byte">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Byte">
             <summary>
             Byte.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.SByte">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.SByte">
             <summary>
             SByte.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.ByteArray">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.ByteArray">
             <summary>
             ByteArray.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Char">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Char">
             <summary>
             Char.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Guid">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Guid">
             <summary>
             GUID.
             </summary>
         </member>
-        <member name="F:SerializableDataTables.ColumnValueType.Object">
+        <member name="F:SerializableDataTables.ColumnValueTypeEnum.Object">
             <summary>
             Object.
             </summary>
@@ -195,6 +195,13 @@
         <member name="P:SerializableDataTables.SerializableColumn.Type">
             <summary>
             Column value type.
+            </summary>
+        </member>
+        <member name="P:SerializableDataTables.SerializableColumn.OriginalType">
+            <summary>
+            Original element type for array columns.
+            Null for non-array columns or when type preservation is not required.
+            Stored as the assembly-qualified type name for serialization compatibility.
             </summary>
         </member>
         <member name="M:SerializableDataTables.SerializableColumn.#ctor">

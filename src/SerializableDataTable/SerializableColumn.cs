@@ -13,8 +13,6 @@
     /// </summary>
     public class SerializableColumn
     {
-        #region Public-Members
-
         /// <summary>
         /// Name of the data table.
         /// </summary>
@@ -34,17 +32,16 @@
         /// <summary>
         /// Column value type.
         /// </summary>
-        public ColumnValueType Type { get; set; } = ColumnValueType.String;
+        public ColumnValueTypeEnum Type { get; set; } = ColumnValueTypeEnum.String;
 
-        #endregion
-
-        #region Private-Members
+        /// <summary>
+        /// Original element type for array columns.
+        /// Null for non-array columns or when type preservation is not required.
+        /// Stored as the assembly-qualified type name for serialization compatibility.
+        /// </summary>
+        public string OriginalType { get; set; } = null;
 
         private string _Name = "MyTable";
-
-        #endregion
-
-        #region Constructors-and-Factories
 
         /// <summary>
         /// Instantiate.
@@ -53,15 +50,5 @@
         {
 
         }
-
-        #endregion
-
-        #region Public-Methods
-
-        #endregion
-
-        #region Private-Methods
-
-        #endregion
     }
 }

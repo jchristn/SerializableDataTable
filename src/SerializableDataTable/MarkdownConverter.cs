@@ -11,17 +11,11 @@
     /// </summary>
     public static class MarkdownConverter
     {
-        #region Public-Members
-
         /// <summary>
         /// Newline character to use in all markdown conversion operations.
         /// Defaults to Environment.NewLine.
         /// </summary>
         public static string NewlineCharacter { get; set; } = Environment.NewLine;
-
-        #endregion
-
-        #region Public-Methods
 
         /// <summary>
         /// Convert an entire DataTable to markdown format.
@@ -210,29 +204,21 @@
                         sb.Append(value.ToString());
                     }
                 }
-                else if (col.DataType == typeof(object))
+                else if (col.DataType == typeof(object) || value.GetType().IsArray)
                 {
-                    // For Object types, output JSON if not null
-                    try
-                    {
-                        string json = JsonSerializer.Serialize(value);
-                        sb.Append(json);
-                    }
-                    catch
-                    {
-                        sb.Append(value.ToString());
-                    }
+                    // For Object types and arrays, output JSON
+                    sb.Append(FormatComplexValue(value));
                 }
                 else
                 {
                     // Format DateTime and DateTimeOffset with microsecond precision
-                    if (value is DateTime dt_val)
+                    if (value is DateTime dateTimeVal)
                     {
-                        sb.Append(dt_val.ToString("yyyy-MM-dd HH:mm:ss.ffffff"));
+                        sb.Append(dateTimeVal.ToString("yyyy-MM-dd HH:mm:ss.ffffff"));
                     }
-                    else if (value is DateTimeOffset dto_val)
+                    else if (value is DateTimeOffset dateTimeOffsetVal)
                     {
-                        sb.Append(dto_val.ToString("yyyy-MM-dd HH:mm:ss.ffffff zzz"));
+                        sb.Append(dateTimeOffsetVal.ToString("yyyy-MM-dd HH:mm:ss.ffffff zzz"));
                     }
                     else
                     {
@@ -289,7 +275,7 @@
                     {
                         sb.Append("");
                     }
-                    else if (col.Type == ColumnValueType.ByteArray)
+                    else if (col.Type == ColumnValueTypeEnum.ByteArray)
                     {
                         // For byte arrays, convert to Base64
                         if (value is byte[] byteArray)
@@ -301,29 +287,21 @@
                             sb.Append(value.ToString());
                         }
                     }
-                    else if (col.Type == ColumnValueType.Object)
+                    else if (col.Type == ColumnValueTypeEnum.Object || value.GetType().IsArray)
                     {
-                        // For Object types, output JSON if not null
-                        try
-                        {
-                            string json = JsonSerializer.Serialize(value);
-                            sb.Append(json);
-                        }
-                        catch
-                        {
-                            sb.Append(value.ToString());
-                        }
+                        // For Object types and arrays, output JSON
+                        sb.Append(FormatComplexValue(value));
                     }
                     else
                     {
                         // Format DateTime and DateTimeOffset with microsecond precision
-                        if (value is DateTime dt_val)
+                        if (value is DateTime dateTimeVal)
                         {
-                            sb.Append(dt_val.ToString("yyyy-MM-dd HH:mm:ss.ffffff"));
+                            sb.Append(dateTimeVal.ToString("yyyy-MM-dd HH:mm:ss.ffffff"));
                         }
-                        else if (value is DateTimeOffset dto_val)
+                        else if (value is DateTimeOffset dateTimeOffsetVal)
                         {
-                            sb.Append(dto_val.ToString("yyyy-MM-dd HH:mm:ss.ffffff zzz"));
+                            sb.Append(dateTimeOffsetVal.ToString("yyyy-MM-dd HH:mm:ss.ffffff zzz"));
                         }
                         else
                         {
@@ -383,6 +361,62 @@
             }
         }
 
-        #endregion
+        private static string FormatComplexValue(object value)
+        {
+            if (value == null)
+            {
+                return "";
+            }
+
+            try
+            {
+                // For arrays, format as compact JSON array
+                if (value.GetType().IsArray)
+                {
+                    Array arr = (Array)value;
+                    StringBuilder arraySb = new StringBuilder();
+                    arraySb.Append("[");
+
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        if (i > 0)
+                        {
+                            arraySb.Append(",");
+                        }
+
+                        object element = arr.GetValue(i);
+                        if (element == null)
+                        {
+                            arraySb.Append("null");
+                        }
+                        else if (element is string strElement)
+                        {
+                            arraySb.Append("\"");
+                            arraySb.Append(strElement.Replace("\"", "\\\""));
+                            arraySb.Append("\"");
+                        }
+                        else if (element is bool boolElement)
+                        {
+                            arraySb.Append(boolElement ? "true" : "false");
+                        }
+                        else
+                        {
+                            arraySb.Append(element.ToString());
+                        }
+                    }
+
+                    arraySb.Append("]");
+                    return arraySb.ToString();
+                }
+
+                // For other complex types, serialize as JSON
+                string json = JsonSerializer.Serialize(value);
+                return json;
+            }
+            catch
+            {
+                return value.ToString();
+            }
+        }
     }
 }
