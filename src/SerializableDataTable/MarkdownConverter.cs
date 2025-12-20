@@ -112,9 +112,7 @@
             // Build separator row
             foreach (DataColumn col in dt.Columns)
             {
-                sb.Append("| ");
-                sb.Append("---");
-                sb.Append(" ");
+                sb.Append("|---");
             }
             sb.Append("|");
             sb.Append(NewlineCharacter);
@@ -149,9 +147,7 @@
             // Build separator row
             foreach (SerializableColumn col in dt.Columns)
             {
-                sb.Append("| ");
-                sb.Append("---");
-                sb.Append(" ");
+                sb.Append("|---");
             }
             sb.Append("|");
             sb.Append(NewlineCharacter);

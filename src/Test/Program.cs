@@ -12,6 +12,7 @@
     {
         private static int _TestsPassed = 0;
         private static int _TestsFailed = 0;
+        private static List<string> _FailedTests = new List<string>();
 
         public static void Main(string[] args)
         {
@@ -89,9 +90,23 @@
                 Console.WriteLine("========================================");
                 TestArrayTypePreservation();
 
-                Console.WriteLine("\n\n=== All tests completed! ===");
+                Console.WriteLine("\n\n=== FINAL RESULTS ===");
                 Console.WriteLine($"Passed: {_TestsPassed}");
                 Console.WriteLine($"Failed: {_TestsFailed}");
+
+                if (_TestsFailed == 0)
+                {
+                    Console.WriteLine("\n*** ALL TESTS PASSED ***");
+                }
+                else
+                {
+                    Console.WriteLine("\n*** SOME TESTS FAILED ***");
+                    Console.WriteLine("\nFailed tests:");
+                    foreach (string failedTest in _FailedTests)
+                    {
+                        Console.WriteLine($"  - {failedTest}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -516,26 +531,39 @@
 
             object dataValue = resultDt.Rows[0]["Data"];
 
-            // Without OriginalType, it should fall back to object[] with decimals
-            bool isObjectArray = dataValue is object[];
+            // Without OriginalType, infers best type from JSON content (double[] for numeric arrays to preserve precision)
+            bool isDoubleArray = dataValue is double[];
+            bool valuesCorrect = false;
+
+            if (isDoubleArray)
+            {
+                double[] arr = (double[])dataValue;
+                valuesCorrect = arr.Length == 3 &&
+                    Math.Abs(arr[0] - 1.5) < 0.001 &&
+                    Math.Abs(arr[1] - 2.5) < 0.001 &&
+                    Math.Abs(arr[2] - 3.5) < 0.001;
+            }
 
             Console.WriteLine($"  Result type (no OriginalType): {dataValue?.GetType().Name ?? "null"}");
-            Console.WriteLine($"  Falls back to object[]: {isObjectArray}");
+            Console.WriteLine($"  Inferred as double[]: {isDoubleArray}");
+            Console.WriteLine($"  Values correct: {valuesCorrect}");
 
-            AssertTest("Backward compatible: old data without OriginalType works", isObjectArray);
+            AssertTest("Backward compatible: old data infers double[] for numeric arrays", isDoubleArray);
+            AssertTest("Backward compatible: values preserved correctly", valuesCorrect);
         }
 
         private static void AssertTest(string testName, bool passed)
         {
             if (passed)
             {
-                Console.WriteLine($"  ✓ PASS: {testName}");
+                Console.WriteLine($"  PASS: {testName}");
                 _TestsPassed++;
             }
             else
             {
-                Console.WriteLine($"  ✗ FAIL: {testName}");
+                Console.WriteLine($"  FAIL: {testName}");
                 _TestsFailed++;
+                _FailedTests.Add(testName);
             }
         }
 

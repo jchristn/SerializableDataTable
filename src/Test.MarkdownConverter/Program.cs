@@ -1,293 +1,380 @@
-﻿namespace Test.MarkdownConverter
+namespace Test.MarkdownConverter
 {
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Linq;
     using System.Text;
-    using System.Text.Json;
+
     using SerializableDataTables;
 
     public static class Program
     {
+        private static int _TestsPassed = 0;
+        private static int _TestsFailed = 0;
+        private static List<string> _FailedTests = new List<string>();
+
         public static void Main(string[] args)
         {
-            Console.WriteLine("Testing MarkdownConverter functionality");
-            Console.WriteLine("=====================================");
-            Console.WriteLine();
+            Console.WriteLine("=== MarkdownConverter Test Program ===\n");
 
-            // Test with different newline characters
-            TestNewlineCharacters();
+            try
+            {
+                // Test 1: Newline character configuration
+                TestNewlineCharacters();
 
-            // Test with DataTable
-            Console.WriteLine("\nTesting with DataTable:");
-            Console.WriteLine("----------------------");
-            DataTable dt = CreateTestDataTable();
-            TestWithDataTable(dt);
+                // Test 2: DataTable conversion
+                TestDataTableConversion();
 
-            // Test with SerializableDataTable
-            Console.WriteLine("\nTesting with SerializableDataTable:");
-            Console.WriteLine("--------------------------------");
-            SerializableDataTable sdt = CreateTestSerializableDataTable();
-            TestWithSerializableDataTable(sdt);
+                // Test 3: SerializableDataTable conversion
+                TestSerializableDataTableConversion();
 
-            // Test with empty tables
-            Console.WriteLine("\nTesting with empty tables:");
-            Console.WriteLine("------------------------");
-            TestEmptyTables();
+                // Test 4: Empty table handling
+                TestEmptyTables();
 
-            // Test error handling
-            Console.WriteLine("\nTesting error handling:");
-            Console.WriteLine("---------------------");
-            TestErrorHandling();
+                // Test 5: Null input handling
+                TestNullInputHandling();
 
-            // Test array types
-            Console.WriteLine("\nTesting array types:");
-            Console.WriteLine("-------------------");
-            TestArrayTypes();
+                // Test 6: Invalid row index handling
+                TestInvalidRowIndex();
 
-            Console.WriteLine("\nAll tests completed.");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+                // Test 7: Array types
+                TestArrayTypes();
+
+                // Test 8: Pipe character escaping
+                TestPipeEscaping();
+
+                // Test 9: Row iteration
+                TestRowIteration();
+
+                // Print summary
+                Console.WriteLine("\n=== FINAL RESULTS ===");
+                Console.WriteLine($"Passed: {_TestsPassed}");
+                Console.WriteLine($"Failed: {_TestsFailed}");
+
+                if (_TestsFailed == 0)
+                {
+                    Console.WriteLine("\n*** ALL TESTS PASSED ***");
+                }
+                else
+                {
+                    Console.WriteLine("\n*** SOME TESTS FAILED ***");
+                    Console.WriteLine("\nFailed tests:");
+                    foreach (string failedTest in _FailedTests)
+                    {
+                        Console.WriteLine($"  - {failedTest}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nError occurred: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
         }
 
-        #region Test Methods
+        private static void AssertTest(string testName, bool passed)
+        {
+            if (passed)
+            {
+                Console.WriteLine($"  PASS: {testName}");
+                _TestsPassed++;
+            }
+            else
+            {
+                Console.WriteLine($"  FAIL: {testName}");
+                _TestsFailed++;
+                _FailedTests.Add(testName);
+            }
+        }
 
         private static void TestNewlineCharacters()
         {
-            Console.WriteLine("Testing different newline characters:");
-            Console.WriteLine("-----------------------------------");
+            Console.WriteLine("Test 1: Newline character configuration");
+            Console.WriteLine("----------------------------------------");
 
-            // Create a simple table for testing
             DataTable dt = new DataTable("Newline Test");
             dt.Columns.Add("ID", typeof(int));
             dt.Columns.Add("Name", typeof(string));
             dt.Rows.Add(1, "Test");
 
             // Test with default newline (Environment.NewLine)
-            Console.WriteLine("\nDefault newline (Environment.NewLine):");
             MarkdownConverter.NewlineCharacter = Environment.NewLine;
             string defaultResult = MarkdownConverter.Convert(dt);
-            Console.WriteLine($"Result length: {defaultResult.Length}");
-            Console.WriteLine(defaultResult);
+            AssertTest("Default newline produces non-null result", defaultResult != null);
 
             // Test with custom newline (\n)
-            Console.WriteLine("\nCustom newline (\\n):");
             MarkdownConverter.NewlineCharacter = "\n";
             string unixResult = MarkdownConverter.Convert(dt);
-            Console.WriteLine($"Result length: {unixResult.Length}");
-            Console.WriteLine(unixResult);
+            AssertTest("Unix newline (\\n) produces non-null result", unixResult != null);
+            AssertTest("Unix newline result contains \\n", unixResult != null && unixResult.Contains("\n"));
 
             // Test with custom newline (\r\n)
-            Console.WriteLine("\nCustom newline (\\r\\n):");
             MarkdownConverter.NewlineCharacter = "\r\n";
             string windowsResult = MarkdownConverter.Convert(dt);
-            Console.WriteLine($"Result length: {windowsResult.Length}");
-            Console.WriteLine(windowsResult);
+            AssertTest("Windows newline (\\r\\n) produces non-null result", windowsResult != null);
+            AssertTest("Windows newline result contains \\r\\n", windowsResult != null && windowsResult.Contains("\r\n"));
+
+            // Compare lengths - Windows should be longer due to extra \r characters
+            AssertTest("Windows result is longer than Unix result", windowsResult.Length > unixResult.Length);
 
             // Reset to default for other tests
             MarkdownConverter.NewlineCharacter = Environment.NewLine;
+
+            Console.WriteLine();
         }
 
-        private static void TestWithDataTable(DataTable dt)
+        private static void TestDataTableConversion()
         {
+            Console.WriteLine("Test 2: DataTable conversion");
+            Console.WriteLine("----------------------------");
+
+            DataTable dt = CreateTestDataTable();
+
             // Test full conversion
-            Console.WriteLine("\nFull table conversion:");
             string fullMarkdown = MarkdownConverter.Convert(dt);
-            Console.WriteLine(fullMarkdown);
+            AssertTest("Full DataTable conversion returns non-null", fullMarkdown != null);
+            AssertTest("Full conversion contains header row", fullMarkdown != null && fullMarkdown.Contains("| ID |"));
+            AssertTest("Full conversion contains separator", fullMarkdown != null && fullMarkdown.Contains("|---|"));
+            AssertTest("Full conversion contains data row", fullMarkdown != null && fullMarkdown.Contains("John Doe"));
 
             // Test headers only
-            Console.WriteLine("\nHeaders only:");
             string headers = MarkdownConverter.ConvertHeaders(dt);
-            Console.WriteLine(headers);
+            AssertTest("ConvertHeaders returns non-null", headers != null);
+            AssertTest("Headers contain column names", headers != null && headers.Contains("ID") && headers.Contains("Name"));
+            AssertTest("Headers contain separator line", headers != null && headers.Contains("|---|"));
 
             // Test specific row
-            Console.WriteLine("\nSpecific row (index 1):");
-            string row = MarkdownConverter.ConvertRow(dt, 1);
-            Console.WriteLine(row);
+            string row1 = MarkdownConverter.ConvertRow(dt, 1);
+            AssertTest("ConvertRow returns non-null", row1 != null);
+            AssertTest("Row 1 contains 'Jane Smith'", row1 != null && row1.Contains("Jane Smith"));
 
-            // Test row iteration
-            Console.WriteLine("\nIterating rows (first 2 rows):");
-            int count = 0;
-            foreach (string rowMarkdown in MarkdownConverter.IterateRows(dt))
-            {
-                Console.WriteLine(rowMarkdown);
-                count++;
-                if (count >= 2) break; // Just show first two rows
-            }
+            Console.WriteLine();
         }
 
-        private static void TestWithSerializableDataTable(SerializableDataTable sdt)
+        private static void TestSerializableDataTableConversion()
         {
+            Console.WriteLine("Test 3: SerializableDataTable conversion");
+            Console.WriteLine("-----------------------------------------");
+
+            SerializableDataTable sdt = CreateTestSerializableDataTable();
+
             // Test full conversion
-            Console.WriteLine("\nFull table conversion:");
             string fullMarkdown = MarkdownConverter.Convert(sdt);
-            Console.WriteLine(fullMarkdown);
+            AssertTest("Full SerializableDataTable conversion returns non-null", fullMarkdown != null);
+            AssertTest("Full conversion contains header row", fullMarkdown != null && fullMarkdown.Contains("| ID |"));
+            AssertTest("Full conversion contains data row", fullMarkdown != null && fullMarkdown.Contains("John Doe"));
 
             // Test headers only
-            Console.WriteLine("\nHeaders only:");
             string headers = MarkdownConverter.ConvertHeaders(sdt);
-            Console.WriteLine(headers);
+            AssertTest("ConvertHeaders for SDT returns non-null", headers != null);
 
             // Test specific row
-            Console.WriteLine("\nSpecific row (index 1):");
-            string row = MarkdownConverter.ConvertRow(sdt, 1);
-            Console.WriteLine(row);
+            string row0 = MarkdownConverter.ConvertRow(sdt, 0);
+            AssertTest("ConvertRow for SDT returns non-null", row0 != null);
 
-            // Test row iteration
-            Console.WriteLine("\nIterating rows (first 2 rows):");
-            int count = 0;
-            foreach (string rowMarkdown in MarkdownConverter.IterateRows(sdt))
-            {
-                Console.WriteLine(rowMarkdown);
-                count++;
-                if (count >= 2) break; // Just show first two rows
-            }
-
-            // Test ToMarkdown method that uses MarkdownConverter
-            Console.WriteLine("\nTesting ToMarkdown method:");
+            // Test ToMarkdown method matches Convert
             string toMarkdownResult = sdt.ToMarkdown();
-            Console.WriteLine(toMarkdownResult);
-            Console.WriteLine($"Convert and ToMarkdown results match: {toMarkdownResult == fullMarkdown}");
+            AssertTest("ToMarkdown returns non-null", toMarkdownResult != null);
+            AssertTest("ToMarkdown matches Convert result", toMarkdownResult == fullMarkdown);
+
+            Console.WriteLine();
         }
 
         private static void TestEmptyTables()
         {
-            // Test empty DataTable
-            Console.WriteLine("\nEmpty DataTable:");
+            Console.WriteLine("Test 4: Empty table handling");
+            Console.WriteLine("----------------------------");
+
+            // Test empty DataTable (no columns)
             DataTable emptyDt = new DataTable("Empty DataTable");
             string emptyDtResult = MarkdownConverter.Convert(emptyDt);
-            Console.WriteLine($"Result: {(emptyDtResult == null ? "null (correct)" : "not null (incorrect)")}");
+            AssertTest("Empty DataTable (no columns) returns null", emptyDtResult == null);
 
             // Test DataTable with columns but no rows
-            Console.WriteLine("\nDataTable with columns but no rows:");
             DataTable columnsOnlyDt = new DataTable("Columns Only");
             columnsOnlyDt.Columns.Add("Col1", typeof(string));
             columnsOnlyDt.Columns.Add("Col2", typeof(int));
             string columnsOnlyResult = MarkdownConverter.Convert(columnsOnlyDt);
-            Console.WriteLine(columnsOnlyResult);
+            AssertTest("DataTable with columns but no rows returns non-null", columnsOnlyResult != null);
+            AssertTest("Result contains column headers", columnsOnlyResult != null && columnsOnlyResult.Contains("Col1"));
 
-            // Test empty SerializableDataTable
-            Console.WriteLine("\nEmpty SerializableDataTable:");
+            // Test empty SerializableDataTable (no columns)
             SerializableDataTable emptySdt = new SerializableDataTable("Empty SerializableDataTable");
             string emptySdtResult = MarkdownConverter.Convert(emptySdt);
-            Console.WriteLine($"Result: {(emptySdtResult == null ? "null (correct)" : "not null (incorrect)")}");
+            AssertTest("Empty SerializableDataTable (no columns) returns null", emptySdtResult == null);
 
             // Test SerializableDataTable with columns but no rows
-            Console.WriteLine("\nSerializableDataTable with columns but no rows:");
             SerializableDataTable columnsOnlySdt = new SerializableDataTable("Columns Only");
             columnsOnlySdt.Columns.Add(new SerializableColumn { Name = "Col1", Type = ColumnValueTypeEnum.String });
             columnsOnlySdt.Columns.Add(new SerializableColumn { Name = "Col2", Type = ColumnValueTypeEnum.Int32 });
             string columnsOnlySdtResult = MarkdownConverter.Convert(columnsOnlySdt);
-            Console.WriteLine(columnsOnlySdtResult);
+            AssertTest("SerializableDataTable with columns but no rows returns non-null", columnsOnlySdtResult != null);
+
+            Console.WriteLine();
         }
 
-        private static void TestErrorHandling()
+        private static void TestNullInputHandling()
         {
+            Console.WriteLine("Test 5: Null input handling");
+            Console.WriteLine("---------------------------");
+
             // Test with null DataTable
-            Console.WriteLine("\nNull DataTable:");
-            try
-            {
-                string result = MarkdownConverter.Convert(null as DataTable);
-                Console.WriteLine($"Result: {(result == null ? "null" : "not null")}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
+            string nullDtResult = MarkdownConverter.Convert(null as DataTable);
+            AssertTest("Null DataTable returns null", nullDtResult == null);
 
             // Test with null SerializableDataTable
-            Console.WriteLine("\nNull SerializableDataTable:");
-            try
-            {
-                string result = MarkdownConverter.Convert(null as SerializableDataTable);
-                Console.WriteLine($"Result: {(result == null ? "null" : "not null")}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
+            string nullSdtResult = MarkdownConverter.Convert(null as SerializableDataTable);
+            AssertTest("Null SerializableDataTable returns null", nullSdtResult == null);
 
-            // Test ConvertRow with invalid row index for DataTable
-            Console.WriteLine("\nInvalid row index for DataTable:");
+            Console.WriteLine();
+        }
+
+        private static void TestInvalidRowIndex()
+        {
+            Console.WriteLine("Test 6: Invalid row index handling");
+            Console.WriteLine("-----------------------------------");
+
+            // Test with DataTable
             DataTable dt = new DataTable();
             dt.Columns.Add("Test", typeof(string));
             dt.Rows.Add("Value");
+
+            bool dtExceptionThrown = false;
             try
             {
-                string result = MarkdownConverter.ConvertRow(dt, 1); // Only has 1 row (index 0)
-                Console.WriteLine(result);
+                MarkdownConverter.ConvertRow(dt, 1); // Only has 1 row (index 0)
             }
-            catch (Exception ex)
+            catch (ArgumentOutOfRangeException)
             {
-                Console.WriteLine($"Exception (expected): {ex.Message}");
+                dtExceptionThrown = true;
             }
+            AssertTest("DataTable invalid row index throws ArgumentOutOfRangeException", dtExceptionThrown);
 
-            // Test ConvertRow with invalid row index for SerializableDataTable
-            Console.WriteLine("\nInvalid row index for SerializableDataTable:");
+            // Test with SerializableDataTable
             SerializableDataTable sdt = new SerializableDataTable();
             sdt.Columns.Add(new SerializableColumn { Name = "Test", Type = ColumnValueTypeEnum.String });
             sdt.Rows.Add(new Dictionary<string, object> { { "Test", "Value" } });
+
+            bool sdtExceptionThrown = false;
             try
             {
-                string result = MarkdownConverter.ConvertRow(sdt, 1); // Only has 1 row (index 0)
-                Console.WriteLine(result);
+                MarkdownConverter.ConvertRow(sdt, 1); // Only has 1 row (index 0)
             }
-            catch (Exception ex)
+            catch (ArgumentOutOfRangeException)
             {
-                Console.WriteLine($"Exception (expected): {ex.Message}");
+                sdtExceptionThrown = true;
             }
+            AssertTest("SerializableDataTable invalid row index throws ArgumentOutOfRangeException", sdtExceptionThrown);
+
+            Console.WriteLine();
         }
 
-        #endregion
+        private static void TestArrayTypes()
+        {
+            Console.WriteLine("Test 7: Array types");
+            Console.WriteLine("-------------------");
 
-        #region Helper Methods
+            // Test DataTable with array columns
+            DataTable dt = new DataTable("ArrayTest");
+            dt.Columns.Add("ID", typeof(int));
+            dt.Columns.Add("FloatArray", typeof(object));
+            dt.Columns.Add("IntArray", typeof(object));
+            dt.Columns.Add("StringArray", typeof(object));
+
+            dt.Rows.Add(1, new float[] { 0.1f, 0.2f, 0.3f }, new int[] { 1, 2, 3 }, new string[] { "a", "b", "c" });
+            dt.Rows.Add(2, null, null, null);
+
+            string dtMarkdown = MarkdownConverter.Convert(dt);
+            AssertTest("DataTable with arrays converts to markdown", dtMarkdown != null);
+            AssertTest("Array markdown contains array representation", dtMarkdown != null && dtMarkdown.Contains("["));
+
+            // Test SerializableDataTable with array columns
+            SerializableDataTable sdt = new SerializableDataTable("SerializableArrayTest");
+            sdt.Columns.Add(new SerializableColumn { Name = "Name", Type = ColumnValueTypeEnum.String });
+            sdt.Columns.Add(new SerializableColumn { Name = "Embedding", Type = ColumnValueTypeEnum.Object });
+
+            sdt.Rows.Add(new Dictionary<string, object>
+            {
+                { "Name", "Document 1" },
+                { "Embedding", new float[] { 0.1f, 0.2f, 0.3f, 0.4f } }
+            });
+
+            string sdtMarkdown = MarkdownConverter.Convert(sdt);
+            AssertTest("SerializableDataTable with arrays converts to markdown", sdtMarkdown != null);
+            AssertTest("SDT array markdown contains 'Document 1'", sdtMarkdown != null && sdtMarkdown.Contains("Document 1"));
+
+            Console.WriteLine();
+        }
+
+        private static void TestPipeEscaping()
+        {
+            Console.WriteLine("Test 8: Pipe character escaping");
+            Console.WriteLine("--------------------------------");
+
+            DataTable dt = new DataTable("PipeTest");
+            dt.Columns.Add("Text", typeof(string));
+            dt.Rows.Add("Value | With | Pipes");
+
+            string markdown = MarkdownConverter.Convert(dt);
+            AssertTest("Table with pipes converts to markdown", markdown != null);
+            AssertTest("Pipes are escaped as \\|", markdown != null && markdown.Contains("\\|"));
+
+            SerializableDataTable sdt = new SerializableDataTable("PipeTest");
+            sdt.Columns.Add(new SerializableColumn { Name = "Text", Type = ColumnValueTypeEnum.String });
+            sdt.Rows.Add(new Dictionary<string, object> { { "Text", "Another | Pipe | Test" } });
+
+            string sdtMarkdown = MarkdownConverter.Convert(sdt);
+            AssertTest("SDT with pipes converts to markdown", sdtMarkdown != null);
+            AssertTest("SDT pipes are escaped", sdtMarkdown != null && sdtMarkdown.Contains("\\|"));
+
+            Console.WriteLine();
+        }
+
+        private static void TestRowIteration()
+        {
+            Console.WriteLine("Test 9: Row iteration");
+            Console.WriteLine("---------------------");
+
+            DataTable dt = new DataTable("IterationTest");
+            dt.Columns.Add("ID", typeof(int));
+            dt.Columns.Add("Name", typeof(string));
+            dt.Rows.Add(1, "First");
+            dt.Rows.Add(2, "Second");
+            dt.Rows.Add(3, "Third");
+
+            // Test DataTable row iteration
+            List<string> dtRows = MarkdownConverter.IterateRows(dt).ToList();
+            AssertTest("DataTable IterateRows returns correct count", dtRows.Count == 3);
+            AssertTest("First iterated row contains 'First'", dtRows.Count > 0 && dtRows[0].Contains("First"));
+            AssertTest("Last iterated row contains 'Third'", dtRows.Count == 3 && dtRows[2].Contains("Third"));
+
+            // Test SerializableDataTable row iteration
+            SerializableDataTable sdt = new SerializableDataTable("IterationTest");
+            sdt.Columns.Add(new SerializableColumn { Name = "ID", Type = ColumnValueTypeEnum.Int32 });
+            sdt.Columns.Add(new SerializableColumn { Name = "Name", Type = ColumnValueTypeEnum.String });
+            sdt.Rows.Add(new Dictionary<string, object> { { "ID", 1 }, { "Name", "Alpha" } });
+            sdt.Rows.Add(new Dictionary<string, object> { { "ID", 2 }, { "Name", "Beta" } });
+
+            List<string> sdtRows = MarkdownConverter.IterateRows(sdt).ToList();
+            AssertTest("SDT IterateRows returns correct count", sdtRows.Count == 2);
+            AssertTest("First SDT iterated row contains 'Alpha'", sdtRows.Count > 0 && sdtRows[0].Contains("Alpha"));
+
+            Console.WriteLine();
+        }
 
         private static DataTable CreateTestDataTable()
         {
             DataTable dt = new DataTable("Test DataTable");
 
-            // Add columns with various types
             dt.Columns.Add("ID", typeof(int));
             dt.Columns.Add("Name", typeof(string));
             dt.Columns.Add("IsActive", typeof(bool));
-            dt.Columns.Add("Created", typeof(DateTime));
-            dt.Columns.Add("LastLogin", typeof(DateTimeOffset));
             dt.Columns.Add("Balance", typeof(decimal));
-            dt.Columns.Add("Data", typeof(byte[]));
 
-            // Add rows with test data
-            DateTime now = DateTime.Now;
-            DateTimeOffset nowOffset = DateTimeOffset.Now;
-
-            dt.Rows.Add(
-                1,
-                "John Doe",
-                true,
-                now,
-                nowOffset,
-                1234.56m,
-                new byte[] { 1, 2, 3, 4, 5 }
-            );
-
-            dt.Rows.Add(
-                2,
-                "Jane Smith",
-                false,
-                now.AddDays(-1),
-                nowOffset.AddDays(-1),
-                7890.12m,
-                Encoding.UTF8.GetBytes("Test binary data")
-            );
-
-            dt.Rows.Add(
-                3,
-                "Bob | Jones", // Test pipe character escaping
-                true,
-                now.AddDays(-2),
-                nowOffset.AddDays(-2),
-                500m,
-                null
-            );
+            dt.Rows.Add(1, "John Doe", true, 1234.56m);
+            dt.Rows.Add(2, "Jane Smith", false, 7890.12m);
+            dt.Rows.Add(3, "Bob Jones", true, 500m);
 
             return dt;
         }
@@ -296,34 +383,17 @@
         {
             SerializableDataTable sdt = new SerializableDataTable("Test SerializableDataTable");
 
-            // Add columns with various types
             sdt.Columns.Add(new SerializableColumn { Name = "ID", Type = ColumnValueTypeEnum.Int32 });
             sdt.Columns.Add(new SerializableColumn { Name = "Name", Type = ColumnValueTypeEnum.String });
             sdt.Columns.Add(new SerializableColumn { Name = "IsActive", Type = ColumnValueTypeEnum.Boolean });
-            sdt.Columns.Add(new SerializableColumn { Name = "Created", Type = ColumnValueTypeEnum.DateTime });
-            sdt.Columns.Add(new SerializableColumn { Name = "LastLogin", Type = ColumnValueTypeEnum.DateTimeOffset });
             sdt.Columns.Add(new SerializableColumn { Name = "Balance", Type = ColumnValueTypeEnum.Decimal });
-            sdt.Columns.Add(new SerializableColumn { Name = "Data", Type = ColumnValueTypeEnum.ByteArray });
-            sdt.Columns.Add(new SerializableColumn { Name = "Metadata", Type = ColumnValueTypeEnum.Object });
-
-            // Add rows with test data
-            DateTime now = DateTime.Now;
-            DateTimeOffset nowOffset = DateTimeOffset.Now;
-
-            // Add microsecond precision
-            now = now.AddTicks(3456);
-            nowOffset = nowOffset.AddTicks(7890);
 
             sdt.Rows.Add(new Dictionary<string, object>
             {
                 { "ID", 1 },
                 { "Name", "John Doe" },
                 { "IsActive", true },
-                { "Created", now },
-                { "LastLogin", nowOffset },
-                { "Balance", 1234.56m },
-                { "Data", new byte[] { 1, 2, 3, 4, 5 } },
-                { "Metadata", new { Tags = new[] { "vip", "premium" }, Notes = "Special customer" } }
+                { "Balance", 1234.56m }
             });
 
             sdt.Rows.Add(new Dictionary<string, object>
@@ -331,83 +401,10 @@
                 { "ID", 2 },
                 { "Name", "Jane Smith" },
                 { "IsActive", false },
-                { "Created", now.AddDays(-1) },
-                { "LastLogin", nowOffset.AddDays(-1) },
-                { "Balance", 7890.12m },
-                { "Data", Encoding.UTF8.GetBytes("Test binary data") },
-                { "Metadata", new { Tags = new[] { "regular" }, Notes = "Standard account" } }
-            });
-
-            sdt.Rows.Add(new Dictionary<string, object>
-            {
-                { "ID", 3 },
-                { "Name", "Bob | Jones" }, // Test pipe character escaping
-                { "IsActive", true },
-                { "Created", now.AddDays(-2) },
-                { "LastLogin", nowOffset.AddDays(-2) },
-                { "Balance", 500m },
-                { "Data", null },
-                { "Metadata", null }
+                { "Balance", 7890.12m }
             });
 
             return sdt;
         }
-
-        private static void TestArrayTypes()
-        {
-            Console.WriteLine("\nTesting DataTable with array columns:");
-
-            // Create DataTable with array columns
-            DataTable dt = new DataTable("ArrayTest");
-            dt.Columns.Add("ID", typeof(int));
-            dt.Columns.Add("FloatArray", typeof(object));
-            dt.Columns.Add("IntArray", typeof(object));
-            dt.Columns.Add("StringArray", typeof(object));
-
-            dt.Rows.Add(1, new float[] { 0.1f, 0.2f, 0.3f }, new int[] { 1, 2, 3 }, new string[] { "a", "b", "c" });
-            dt.Rows.Add(2, new float[] { -0.5f, 0f, 0.5f }, new int[] { 10, 20 }, new string[] { "hello", "world" });
-            dt.Rows.Add(3, null, null, null);
-
-            string markdown = MarkdownConverter.Convert(dt);
-            Console.WriteLine(markdown);
-
-            Console.WriteLine("\nTesting SerializableDataTable with array columns:");
-
-            // Create SerializableDataTable with array columns
-            SerializableDataTable sdt = new SerializableDataTable("SerializableArrayTest");
-            sdt.Columns.Add(new SerializableColumn { Name = "Name", Type = ColumnValueTypeEnum.String });
-            sdt.Columns.Add(new SerializableColumn { Name = "Embedding", Type = ColumnValueTypeEnum.Object });
-            sdt.Columns.Add(new SerializableColumn { Name = "Tags", Type = ColumnValueTypeEnum.Object });
-            sdt.Columns.Add(new SerializableColumn { Name = "Flags", Type = ColumnValueTypeEnum.Object });
-
-            sdt.Rows.Add(new Dictionary<string, object>
-            {
-                { "Name", "Document 1" },
-                { "Embedding", new float[] { 0.1f, 0.2f, 0.3f, 0.4f } },
-                { "Tags", new string[] { "important", "urgent" } },
-                { "Flags", new bool[] { true, false, true } }
-            });
-
-            sdt.Rows.Add(new Dictionary<string, object>
-            {
-                { "Name", "Document 2" },
-                { "Embedding", new double[] { 1.1, 2.2, 3.3 } },
-                { "Tags", new string[] { "normal" } },
-                { "Flags", new bool[] { false } }
-            });
-
-            sdt.Rows.Add(new Dictionary<string, object>
-            {
-                { "Name", "Document 3 (empty/null)" },
-                { "Embedding", new float[0] },
-                { "Tags", null },
-                { "Flags", null }
-            });
-
-            string sdtMarkdown = MarkdownConverter.Convert(sdt);
-            Console.WriteLine(sdtMarkdown);
-        }
-
-        #endregion
     }
 }

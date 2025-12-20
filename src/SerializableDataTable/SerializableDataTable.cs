@@ -103,6 +103,11 @@
                         serCol.OriginalType = col.DataType.AssemblyQualifiedName;
                     }
                 }
+                // For unknown types that map to Object (e.g., Pgvector.Vector), store the original type
+                else if (serCol.Type == ColumnValueTypeEnum.Object && col.DataType != typeof(object))
+                {
+                    serCol.OriginalType = col.DataType.AssemblyQualifiedName;
+                }
 
                 ret.Columns.Add(serCol);
             }
@@ -120,7 +125,9 @@
                     }
                     else
                     {
-                        val.Add(col.ColumnName, cellValue);
+                        // For unknown types, try to normalize to array via ToArray() method
+                        object normalizedValue = TryNormalizeToArray(cellValue);
+                        val.Add(col.ColumnName, normalizedValue);
                     }
                 }
 
@@ -290,6 +297,42 @@
             return null;
         }
 
+        private static object TryNormalizeToArray(object value)
+        {
+            if (value == null) return null;
+
+            Type valueType = value.GetType();
+
+            // If it's already a known/primitive type or an array, return as-is
+            if (valueType.IsPrimitive || valueType == typeof(string) || valueType == typeof(decimal) ||
+                valueType == typeof(DateTime) || valueType == typeof(DateTimeOffset) ||
+                valueType == typeof(TimeSpan) || valueType == typeof(Guid) || valueType.IsArray)
+            {
+                return value;
+            }
+
+            // For unknown types, try to extract array data via ToArray() method
+            System.Reflection.MethodInfo toArrayMethod = valueType.GetMethod("ToArray",
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+                null, Type.EmptyTypes, null);
+
+            if (toArrayMethod != null && toArrayMethod.ReturnType.IsArray)
+            {
+                try
+                {
+                    return toArrayMethod.Invoke(value, null);
+                }
+                catch
+                {
+                    // If ToArray() fails, return original value
+                    return value;
+                }
+            }
+
+            // No ToArray() method found, return original value
+            return value;
+        }
+
         private static object GetValue(object obj, string originalType)
         {
             if (obj == null) return null;
@@ -320,7 +363,26 @@
                             return Decimal.Parse(numStr);
                         }
                     case JsonValueKind.Object:
-                        // Convert objects to compact JSON string
+                        // Try to deserialize to original type if available
+                        if (!String.IsNullOrEmpty(originalType))
+                        {
+                            Type targetType = ResolveType(originalType);
+                            if (targetType != null)
+                            {
+                                try
+                                {
+                                    string json = element.GetRawText();
+                                    object deserialized = JsonSerializer.Deserialize(json, targetType);
+                                    if (deserialized != null)
+                                        return deserialized;
+                                }
+                                catch
+                                {
+                                    // Deserialization failed, fall through to JSON string
+                                }
+                            }
+                        }
+                        // Fall back to compact JSON string
                         return JsonSerializer.Serialize(element);
                     case JsonValueKind.String:
                         return obj.ToString();
@@ -341,37 +403,191 @@
         {
             int length = arrayElement.GetArrayLength();
 
-            // If we have type metadata, create a properly typed array
+            // If we have type metadata, try to use it
             if (!String.IsNullOrEmpty(originalType))
             {
-                Type arrayType = Type.GetType(originalType);
-                if (arrayType != null && arrayType.IsArray)
+                Type targetType = ResolveType(originalType);
+
+                if (targetType != null)
                 {
-                    Type elementType = arrayType.GetElementType();
-                    if (elementType != null)
+                    // If the original type is an array, create that array type
+                    if (targetType.IsArray)
                     {
-                        Array typedArray = Array.CreateInstance(elementType, length);
-                        int index = 0;
-                        foreach (JsonElement item in arrayElement.EnumerateArray())
+                        Type elementType = targetType.GetElementType();
+                        if (elementType != null)
                         {
-                            object value = GetValue(item, null);
-                            typedArray.SetValue(ConvertToType(value, elementType), index);
-                            index++;
+                            Array typedArray = Array.CreateInstance(elementType, length);
+                            int index = 0;
+                            foreach (JsonElement item in arrayElement.EnumerateArray())
+                            {
+                                object value = GetValue(item, null);
+                                typedArray.SetValue(ConvertToType(value, elementType), index);
+                                index++;
+                            }
+                            return typedArray;
                         }
-                        return typedArray;
+                    }
+                    else
+                    {
+                        // Original type is not an array (e.g., Pgvector.Vector)
+                        // Try to reconstruct it using a constructor that takes an array
+                        object reconstructed = TryReconstructFromArray(arrayElement, targetType);
+                        if (reconstructed != null)
+                            return reconstructed;
+
+                        // Fall through to return a typed array based on the JSON content
                     }
                 }
             }
 
-            // Fallback to object[] if no type metadata
-            object[] result = new object[length];
-            int idx = 0;
-            foreach (JsonElement item in arrayElement.EnumerateArray())
+            // Determine the best array type from the JSON content
+            return ParseJsonArrayWithInferredType(arrayElement, length);
+        }
+
+        private static Type ResolveType(string assemblyQualifiedName)
+        {
+            Type targetType = Type.GetType(assemblyQualifiedName);
+            if (targetType != null) return targetType;
+
+            // Type not found - try to load from all loaded assemblies
+            string typeName = assemblyQualifiedName.Split(',')[0].Trim();
+            foreach (System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                result[idx] = GetValue(item, null);
-                idx++;
+                targetType = assembly.GetType(typeName);
+                if (targetType != null) return targetType;
             }
-            return result;
+
+            return null;
+        }
+
+        private static object TryReconstructFromArray(JsonElement arrayElement, Type targetType)
+        {
+            try
+            {
+                int length = arrayElement.GetArrayLength();
+
+                // Try array constructor patterns (double[] first for precision, then float[] for compatibility)
+                Type[] arrayTypes = new[]
+                {
+                    // Floating point (double first for precision)
+                    typeof(double[]), typeof(float[]), typeof(decimal[]),
+                    // Signed integers (long first for range)
+                    typeof(long[]), typeof(int[]), typeof(short[]), typeof(sbyte[]),
+                    // Unsigned integers
+                    typeof(ulong[]), typeof(uint[]), typeof(ushort[]), typeof(byte[]),
+                    // Other primitives
+                    typeof(bool[]), typeof(char[]),
+                    // Common reference/value types
+                    typeof(string[]), typeof(Guid[]), typeof(DateTime[]), typeof(DateTimeOffset[]), typeof(TimeSpan[])
+                };
+
+                foreach (Type arrayType in arrayTypes)
+                {
+                    System.Reflection.ConstructorInfo ctor = targetType.GetConstructor(new[] { arrayType });
+                    if (ctor != null)
+                    {
+                        Type elementType = arrayType.GetElementType();
+                        Array array = Array.CreateInstance(elementType, length);
+                        int index = 0;
+                        foreach (JsonElement item in arrayElement.EnumerateArray())
+                        {
+                            object value = GetValue(item, null);
+                            array.SetValue(ConvertToType(value, elementType), index);
+                            index++;
+                        }
+                        return ctor.Invoke(new object[] { array });
+                    }
+                }
+
+                // Try ReadOnlyMemory<T> constructor patterns (double first for precision)
+                Type[] memoryTypes = new[]
+                {
+                    typeof(ReadOnlyMemory<double>), typeof(ReadOnlyMemory<float>),
+                    typeof(ReadOnlyMemory<long>), typeof(ReadOnlyMemory<int>), typeof(ReadOnlyMemory<short>), typeof(ReadOnlyMemory<sbyte>),
+                    typeof(ReadOnlyMemory<ulong>), typeof(ReadOnlyMemory<uint>), typeof(ReadOnlyMemory<ushort>), typeof(ReadOnlyMemory<byte>),
+                    typeof(ReadOnlyMemory<bool>), typeof(ReadOnlyMemory<char>)
+                };
+
+                foreach (Type memoryType in memoryTypes)
+                {
+                    System.Reflection.ConstructorInfo ctor = targetType.GetConstructor(new[] { memoryType });
+                    if (ctor != null)
+                    {
+                        Type elementType = memoryType.GetGenericArguments()[0];
+                        Array array = Array.CreateInstance(elementType, length);
+                        int index = 0;
+                        foreach (JsonElement item in arrayElement.EnumerateArray())
+                        {
+                            object value = GetValue(item, null);
+                            array.SetValue(ConvertToType(value, elementType), index);
+                            index++;
+                        }
+
+                        // Create ReadOnlyMemory<T> from the array
+                        object memoryInstance = Activator.CreateInstance(memoryType, array);
+                        return ctor.Invoke(new object[] { memoryInstance });
+                    }
+                }
+            }
+            catch
+            {
+                // Reconstruction failed
+            }
+
+            return null;
+        }
+
+        private static object ParseJsonArrayWithInferredType(JsonElement arrayElement, int length)
+        {
+            if (length == 0)
+            {
+                return new object[0];
+            }
+
+            // Peek at the first element to determine type
+            JsonElement firstElement = arrayElement[0];
+
+            switch (firstElement.ValueKind)
+            {
+                case JsonValueKind.Number:
+                    // Default to double[] for numeric arrays (preserves precision better than float[])
+                    double[] doubleResult = new double[length];
+                    int doubleIdx = 0;
+                    foreach (JsonElement item in arrayElement.EnumerateArray())
+                    {
+                        doubleResult[doubleIdx++] = item.GetDouble();
+                    }
+                    return doubleResult;
+
+                case JsonValueKind.String:
+                    string[] stringResult = new string[length];
+                    int strIdx = 0;
+                    foreach (JsonElement item in arrayElement.EnumerateArray())
+                    {
+                        stringResult[strIdx++] = item.GetString();
+                    }
+                    return stringResult;
+
+                case JsonValueKind.True:
+                case JsonValueKind.False:
+                    bool[] boolResult = new bool[length];
+                    int boolIdx = 0;
+                    foreach (JsonElement item in arrayElement.EnumerateArray())
+                    {
+                        boolResult[boolIdx++] = item.GetBoolean();
+                    }
+                    return boolResult;
+
+                default:
+                    // Fallback to object[]
+                    object[] result = new object[length];
+                    int idx = 0;
+                    foreach (JsonElement item in arrayElement.EnumerateArray())
+                    {
+                        result[idx++] = GetValue(item, null);
+                    }
+                    return result;
+            }
         }
 
         private static object ConvertToType(object value, Type targetType)
