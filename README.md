@@ -10,10 +10,10 @@ SerializableDataTable is a library providing an abstraction class that allows yo
 
 If you have any issues or feedback, please file an issue here in Github. We'd love to have you help by contributing code for new features, optimization to the existing codebase, ideas for future releases, or fixes!
 
-## New in v1.1.0
+## New in v1.1.1
 
-- Updated `System.Text.Json` to 10.0.11
-- Fixed JSON round-trip of `DateTimeOffset` and `byte[]` scalar columns
+- Updated `System.Text.Json` to 10.0.12
+- Updated test tooling (Touchstone 0.2.0, NUnit 5.0.0, Microsoft.NET.Test.Sdk 18.10.1)
 
 ## Example
 
